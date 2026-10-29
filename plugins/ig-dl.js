@@ -32,7 +32,7 @@ cmd({
 
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-        const apiUrl = `https://xenosirapis.zone.id/api/igdl?url=${encodeURIComponent(url)}`;
+        const apiUrl = `https://zellrayy.com/download/instagram?url=${encodeURIComponent(url)}`;
         const response = await axios.get(apiUrl);
 
         if (!response.data?.status || !response.data.data?.length) {
@@ -73,7 +73,7 @@ cmd({
 
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-        const apiUrl = `https://bk9.fun/download/instagram?url=${encodeURIComponent(igUrl)}`;
+        const apiUrl = `https://zellrayy.com/download/instagram?url=${encodeURIComponent(igUrl)}`;
         const response = await axios.get(apiUrl);
 
         if (!response.data?.status || !response.data?.BK9?.[0]?.url) {
@@ -120,7 +120,7 @@ cmd({
 
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
-        const apiUrl = `https://jawad-tech.vercel.app/downloader?url=${encodeURIComponent(igUrl)}`;
+        const apiUrl = `https://zellrayy.com/download/instagram?url=${encodeURIComponent(igUrl)}`;
         const response = await axios.get(apiUrl);
         const data = response.data;
 
