@@ -37,7 +37,7 @@ async function react(sock, mek, emoji) {
 function xBox(data) {
     return `
 ‎*╔ஜ۩▒█ *ʟᴇᴠɪᴀɴᴏ X xᴅ* █▒۩ஜ╗*
-*|* *_ᴀʀꜱʟᴀɴ-ᴍᴅ xᴠɪᴅᴇᴏs_* 
+*|* *_ʟᴇᴠɪᴀɴᴏ-xᴅ xᴠɪᴅᴇᴏs_* 
 *|┉┉┉┉◉◉◉┉┉┉┉┉┉┉━•⟢*
 *|▸ 📌 ᴛɪᴛʟᴇ:* ${data.title}
 *|▸ ⏱ ᴅᴜʀᴀᴛɪᴏɴ:* ${data.duration || "N/A"}
@@ -117,7 +117,7 @@ cmd({
             fileName: `${videoData.title}.mp4`,
             caption: `
 ‎*╔ஜ۩▒█ *ʟᴇᴠɪᴀɴᴏ X xᴅ* █▒۩ஜ╗*
-‎*| 𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙱𝚈 *ᴀʀꜱʟᴀɴ-ᴍᴅ* 
+‎*| 𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙱𝚈 *ʟᴇᴠɪᴀɴᴏ-xᴅ* 
 ‎*╰━━━━━━━━━━━━━━━━━━⊷*`
         }, { quoted: fakevCard });
 
