@@ -46,7 +46,7 @@ caption
 
 /* 🎥 API */
 
-const api = `https://arslan-apis-v2.vercel.app/download/ytmp4?url=${encodeURIComponent(vid.url)}`
+const api = `https://xenosirapis.zone.id/api/ytmp4dl?url=${encodeURIComponent(vid.url)}`
 
 const res = await axios.get(api,{timeout:60000})
 
