@@ -109,7 +109,7 @@ function levianoLog(message, type = 'info') {
 const pluginsDir = path.join(__dirname, 'plugins');
 if (!fs.existsSync(pluginsDir)) fs.mkdirSync(pluginsDir, { recursive: true });
 const pluginFiles = fs.readdirSync(pluginsDir).filter(f => f.endsWith('.js'));
-arslanLog(`Loading ${pluginFiles.length} plugins...`, 'info');
+levianoLog(`Loading ${pluginFiles.length} plugins...`, 'info');
 for (const file of pluginFiles) {
     try { require(path.join(pluginsDir, file)); }
     catch (e) { levianoLog(`Failed to load plugin ${file}: ${e.message}`, 'error'); }
@@ -207,7 +207,7 @@ async function levianoPair(number, res = null) {
         const existingSession = await getSessionFromMongoDB(sanitizedNumber);
 
         if (!existingSession) {
-            leviano(`No MongoDB session for ${sanitizedNumber} — new pairing required`, 'info');
+            levianoLog(`No MongoDB session for ${sanitizedNumber} — new pairing required`, 'info');
             if (fs.existsSync(sessionPath)) {
                 await fs.remove(sessionPath);
                 levianoLog(`Cleaned leftover local session for ${sanitizedNumber}`, 'info');
