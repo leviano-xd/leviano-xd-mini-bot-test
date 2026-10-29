@@ -2,7 +2,7 @@ const axios = require("axios");
 const { cmd } = require('../leviano');
 const { fakevCard } = require('../lib/fakevCard');
 
-const API_URL = "https://zellrayy.com/download/instagram";
+const API_URL = "https://zellrayy.com/download/instagram/v2";
 const HTTP_TIMEOUT = 30000;
 
 const BRAND_CAPTION = `*_ɪɴsᴛᴀɢʀᴀᴍ ᴅᴏᴡɴʟᴏᴀᴅᴇʀ_*
@@ -11,7 +11,6 @@ const BRAND_CAPTION = `*_ɪɴsᴛᴀɢʀᴀᴍ ᴅᴏᴡɴʟᴏᴀᴅᴇʀ_*
 ‎*|* 𝙿𝙾𝚆𝙴𝚁𝙴𝙳 𝙱𝚈 *ʟᴇᴠɪᴀɴᴏ ꜱᴇʀ* 
 ‎*╰━━━━━━━━━━━━━━━━━━⊷*`;
 
-// Finds the first Instagram link in any text and removes tracking params
 function extractInstagramUrl(text) {
     if (!text) return null;
     const match = text.match(/(?:https?:\/\/)?(?:www\.)?instagram\.com\/[^\s]+/i);
@@ -21,7 +20,6 @@ function extractInstagramUrl(text) {
     return url.split("?")[0].split("#")[0].replace(/\/+$/, "") + "/";
 }
 
-// Pulls media URLs out of whichever response shape the API returns
 function extractMedia(data) {
     if (!data) return [];
 
@@ -44,11 +42,10 @@ function extractMedia(data) {
     return [];
 }
 
-// Calls the API once and returns { items, data }
 async function fetchMedia(igUrl) {
     const apiUrl = `${API_URL}?url=${encodeURIComponent(igUrl)}`;
     const { data } = await axios.get(apiUrl, { timeout: HTTP_TIMEOUT });
-    console.log("Instagram API response:", JSON.stringify(data).slice(0, 500));
+    console.log("Instagram API FULL response:", JSON.stringify(data).slice(0, 2000));
     return { items: extractMedia(data), data };
 }
 
