@@ -32,7 +32,7 @@ return reply("❌ No result Found");
 const video = search.videos[0];
 
 /* 🎧 MP3 API */
-const apiUrl = `https://xenosirapis.zone.id/api/ytmp3dl?url=${video.url}`;
+const apiUrl = `https://api.nexray.eu.cc/downloader/ytplay?q=Jhol${video.url}`;
 
 const res = await axios.get(apiUrl, { timeout: 60000 });
 
