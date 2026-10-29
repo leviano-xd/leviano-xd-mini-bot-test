@@ -37,14 +37,14 @@ cmd({
 ┃ ✦│▸ Total Commands : *${totalCommands}*
 ┃ ✦│▸ Time           : ${time}
 ┃ ✦│▸ Date           : ${date}
-┃ ✦│▸ Platform       : arslanmd.xo.je
+┃ ✦│▸ Platform       : leviano-xd.com
 ┃ ✦╰─────────────┈⊷
 ╰━━━━━━━━━━━━┈⊷
 ${menuText}
 `.trim();
 
         await conn.sendMessage(m.chat, {
-            image: { url: "https://files.catbox.moe/prkkzj.png" },
+            image: { url: "https://levianoxd.orionbey76.workers.dev/f/Img-1793288584306.jpg" },
             caption,
             contextInfo: {
                 forwardingScore: 999,
