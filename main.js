@@ -12,7 +12,7 @@ const {
 } = require('@whiskeysockets/baileys');
 const { levianomd } = require('./lib/system');
 const config = require('./config');
-const events = require('./arslan');
+const events = require('./leviano');
 const { sms } = require('./lib/msg');
 const {
     connectdb,
