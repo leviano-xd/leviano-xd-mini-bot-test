@@ -21,7 +21,7 @@ cmd({
         await conn.sendMessage(from, { react: { text: '⏳', key: m.key } });
 
         // Fetch from API
-        const apiUrl = `https://api-aswin-sparky.koyeb.app/api/downloader/igdl?url=${encodeURIComponent(url)}`;
+        const apiUrl = `https://xenosirapis.zone.id/api/igdl?url==${encodeURIComponent(url)}`;
         const response = await axios.get(apiUrl);
 
         if (!response.data?.status || !response.data.data?.length) {
