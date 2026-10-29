@@ -1,5 +1,6 @@
 const {
     default: makeWASocket,
+    fetchLatestBaileysVersion,
     useMultiFileAuthState,
     delay,
     makeCacheableSignalKeyStore,
@@ -220,6 +221,7 @@ async function levianoPair(number, res = null) {
         }
 
         const { state, saveCreds } = await useMultiFileAuthState(sessionPath);
+        const { version } = await fetchLatestBaileysVersion();
         const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'fatal' : 'debug' });
 
         const levianoStore = createarslanStore();
@@ -231,7 +233,7 @@ async function levianoPair(number, res = null) {
             },
             printQRInTerminal: false,
             logger: pino({ level: "silent" }),
-            version: [2, 3000, 1033105955],
+            version,
             connectTimeoutMs: 60000,
             defaultQueryTimeoutMs: 0,
             keepAliveIntervalMs: 10000,
@@ -324,7 +326,7 @@ async function levianoPair(number, res = null) {
         conn.ev.on('connection.update', async (update) => {
             const { connection, lastDisconnect } = update;
             if (connection === 'open') {
-                await levianoxd(conn);
+                await levianomd(conn);
                 levianoLog(`Connected: ${sanitizedNumber}`, 'success');
                 const userJid = jidNormalizedUser(conn.user.id);
                 await addNumberToMongoDB(sanitizedNumber);
