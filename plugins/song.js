@@ -3,10 +3,24 @@ const yts = require("yt-search");
 const axios = require("axios");
 const { fakevCard } = require('../lib/fakevCard');
 
-/* YouTube link aano ennu nokkunnu, video ID edukkunnu */
+const UA = "Mozilla/5.0 (Linux; Android 12) AppleWebKit/537.36 Chrome/120 Mobile Safari/537.36";
+
+/* YouTube video ID edukkunnu */
 const getYtId = (text) => {
   const m = text.match(/(?:youtu\.be\/|v=|shorts\/|embed\/)([\w-]{11})/);
   return m ? m[1] : null;
+};
+
+/* File buffer aayi download cheyyunnu */
+const getBuffer = async (url) => {
+  const res = await axios.get(url, {
+    responseType: "arraybuffer",
+    timeout: 120000,
+    maxContentLength: Infinity,
+    maxBodyLength: Infinity,
+    headers: { "User-Agent": UA }
+  });
+  return Buffer.from(res.data);
 };
 
 cmd({
@@ -29,11 +43,12 @@ async (conn, mek, m, { from, args, reply }) => {
     const id = getYtId(query);
 
     if (id) {
-      /* 🔗 URL aanenkil: ytmp3 API */
+      /* 🔗 Link aanenkil: ytmp3 API */
       videoUrl = `https://youtu.be/${id}`;
       const res = await axios.get("https://api.nexray.eu.cc/downloader/ytmp3", {
         params: { url: videoUrl },
-        timeout: 60000
+        timeout: 60000,
+        headers: { "User-Agent": UA }
       });
 
       if (!res.data?.status || !res.data?.result?.url) {
@@ -44,10 +59,11 @@ async (conn, mek, m, { from, args, reply }) => {
       dlUrl = res.data.result.url;
       thumbnail = `https://i.ytimg.com/vi/${id}/hqdefault.jpg`;
     } else {
-      /* 🔍 Song name aanenkil: ytplay API */
+      /* 🔍 Name aanenkil: ytplay API */
       const res = await axios.get("https://api.nexray.eu.cc/downloader/ytplay", {
         params: { q: query },
-        timeout: 60000
+        timeout: 60000,
+        headers: { "User-Agent": UA }
       });
 
       if (!res.data?.status || !res.data?.result?.download_url) {
@@ -60,15 +76,15 @@ async (conn, mek, m, { from, args, reply }) => {
       videoUrl = res.data.result.url;
     }
 
+    /* ⬇️ MP3 buffer download */
+    const audioBuffer = await getBuffer(dlUrl);
+
     /* 🎵 SEND AUDIO */
     await conn.sendMessage(from, {
-      audio: { url: dlUrl },
+      audio: audioBuffer,
       mimetype: "audio/mpeg",
       ptt: false,
       fileName: `${title || "song"}.mp3`,
-      caption:
-        `🎵 *${title || "Unknown Title"}*\n\n` +
-        `> © Leviano-XD`,
       contextInfo: {
         externalAdReply: {
           title: title ? title.substring(0, 40) : "YouTube Song",
@@ -84,7 +100,7 @@ async (conn, mek, m, { from, args, reply }) => {
     await conn.sendMessage(from, { react: { text: "✅", key: m.key } });
 
   } catch (err) {
-    console.error("PLAY ERROR:", err);
+    console.error("PLAY ERROR:", err.message, err.response?.status, err.response?.data);
     reply("❌ Error Found Please Try Later");
     await conn.sendMessage(from, { react: { text: "❌", key: m.key } });
   }
@@ -92,7 +108,7 @@ async (conn, mek, m, { from, args, reply }) => {
 
 
 cmd({
-  pattern: "video1",
+  pattern: "video",
   alias: ["vid", "ytv"],
   desc: "Download YouTube Video",
   category: "downloader",
@@ -103,6 +119,8 @@ cmd({
     if (!q) {
       return reply("Please provide a YouTube link or search query.\n\nExample: .video Pasoori");
     }
+
+    await conn.sendMessage(from, { react: { text: "⏳", key: m.key } });
 
     let videoUrl;
     if (q.includes("youtube.com") || q.includes("youtu.be")) {
@@ -117,20 +135,26 @@ cmd({
 
     const res = await axios.get("https://www.neoapis.xyz/api/downloader/ytdl", {
       params: { url: videoUrl, type: "Mp4" },
-      timeout: 60000
+      timeout: 60000,
+      headers: { "User-Agent": UA }
     });
 
     if (!res.data?.status || !res.data?.data?.download) {
       return reply("Failed to fetch video.");
     }
 
+    const videoBuffer = await getBuffer(res.data.data.download);
+
     await conn.sendMessage(from, {
-      video: { url: res.data.data.download },
+      video: videoBuffer,
+      mimetype: "video/mp4",
       caption: `*❀༒★[ʟᴇᴠɪᴀɴᴏ-ᴍᴅ]★༒❀*\n\n🎬 ${res.data.data.title || ""}`
     }, { quoted: fakevCard });
 
+    await conn.sendMessage(from, { react: { text: "✅", key: m.key } });
+
   } catch (err) {
+    console.error("VIDEO ERROR:", err.message, err.response?.status, err.response?.data);
     reply("Error while fetching video.");
-    console.log(err);
   }
 });
