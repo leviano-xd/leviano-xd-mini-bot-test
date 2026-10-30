@@ -24,7 +24,7 @@ cmd({
 
         let menuText = "";
         for (const cat in grouped) {
-            menuText += `\n🧚‍♀️ *${cat.toUpperCase()}*\n`;
+            menuText += `\n➥❮ *${cat.toUpperCase()}*\n`;
             menuText += grouped[cat].map(c => `🍒 ${c}`).join("\n") + "\n";
         }
 
@@ -37,7 +37,7 @@ cmd({
 ┃ ✦│▸ Total Commands : *${totalCommands}*
 ┃ ✦│▸ Time           : ${time}
 ┃ ✦│▸ Date           : ${date}
-┃ ✦│▸ Platform       : arslanmd.xo.je
+┃ ✦│▸ Platform       : whoismonjannick.com
 ┃ ✦╰─────────────┈⊷
 ╰━━━━━━━━━━━━┈⊷
 ${menuText}
