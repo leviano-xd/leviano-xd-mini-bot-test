@@ -23,6 +23,36 @@ const getBuffer = async (url) => {
   return Buffer.from(res.data);
 };
 
+/* Link fail aayal adutha source try cheyyum */
+const downloadAudio = async (videoUrl, firstUrl) => {
+  const sources = [
+    async () => firstUrl,
+    async () => {
+      const r = await axios.get("https://api.nexray.eu.cc/downloader/ytmp3", {
+        params: { url: videoUrl }, timeout: 60000, headers: { "User-Agent": UA }
+      });
+      return r.data?.result?.url;
+    },
+    async () => {
+      const r = await axios.get("https://www.neoapis.xyz/api/downloader/ytdl", {
+        params: { url: videoUrl, type: "Mp3" }, timeout: 60000, headers: { "User-Agent": UA }
+      });
+      return r.data?.data?.download;
+    }
+  ];
+
+  for (const getUrl of sources) {
+    try {
+      const url = await getUrl();
+      if (!url) continue;
+      return await getBuffer(url);
+    } catch (e) {
+      console.log("AUDIO SOURCE FAIL:", e.message);
+    }
+  }
+  return null;
+};
+
 cmd({
   pattern: "song",
   alias: ["ytmp3", "play", "mp3", "gana", "music", "audio"],
@@ -76,12 +106,12 @@ async (conn, mek, m, { from, args, reply }) => {
       videoUrl = res.data.result.url;
     }
 
-    /* ⬇️ MP3 buffer download */
-    const audioBuffer = await getBuffer(dlUrl);
+    /* ⬇️ MP3 download (fallback sources) */
+    const audioBuffer = await downloadAudio(videoUrl, dlUrl);
 
     /* 🎵 SEND AUDIO */
     await conn.sendMessage(from, {
-      audio: audioBuffer,
+      audio: audioBuffer || { url: dlUrl },
       mimetype: "audio/mpeg",
       ptt: false,
       fileName: `${title || "song"}.mp3`,
@@ -108,7 +138,7 @@ async (conn, mek, m, { from, args, reply }) => {
 
 
 cmd({
-  pattern: "video",
+  pattern: "video1",
   alias: ["vid", "ytv"],
   desc: "Download YouTube Video",
   category: "downloader",
@@ -143,10 +173,19 @@ cmd({
       return reply("Failed to fetch video.");
     }
 
-    const videoBuffer = await getBuffer(res.data.data.download);
+    const dlUrl = res.data.data.download;
+
+    /* Buffer aayi download cheyyan nokkum, fail aayal direct link kodukkum */
+    let videoData;
+    try {
+      videoData = await getBuffer(dlUrl);
+    } catch (e) {
+      console.log("VIDEO BUFFER FAIL:", e.message);
+      videoData = { url: dlUrl };
+    }
 
     await conn.sendMessage(from, {
-      video: videoBuffer,
+      video: videoData,
       mimetype: "video/mp4",
       caption: `*❀༒★[ʟᴇᴠɪᴀɴᴏ-ᴍᴅ]★༒❀*\n\n🎬 ${res.data.data.title || ""}`
     }, { quoted: fakevCard });
