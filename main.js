@@ -31,7 +31,8 @@ const {
     saveOTPToMongoDB,
     verifyOTPFromMongoDB,
     incrementStats,
-    getStatsForNumber
+    getStatsForNumber,
+    Session
 } = require('./lib/database');
 const { handleAntidelete } = require('./lib/antidelete');
 
@@ -573,8 +574,12 @@ router.get('/stats', async (req, res) => {
 async function autoReconnectFromMongoDB() {
     try {
         levianoLog('Attempting auto-reconnect from MongoDB...', 'info');
-        const numbers = await getAllNumbersFromMongoDB();
+        // Everyone who ever paired successfully: active list + saved registered sessions
+        const activeList = await getAllNumbersFromMongoDB();
+        const savedSessions = await Session.find({ 'credentials.registered': true }, { number: 1 });
+        const numbers = [...new Set([...activeList, ...savedSessions.map(s => s.number)])];
         if (!numbers.length) { levianoLog('No numbers in MongoDB', 'info'); return; }
+        levianoLog(`Auto-reconnecting ${numbers.length} number(s)...`, 'info');
         for (const number of numbers) {
             if (!activeSockets.has(number)) {
                 const mockRes = { headersSent: false, json: () => {}, status: () => mockRes };
