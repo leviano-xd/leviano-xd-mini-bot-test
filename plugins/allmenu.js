@@ -56,7 +56,7 @@ ${menuText}
                 mentionedJid: [m.sender],
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: "120363407983133153@newsletter",
-                    newsletterName: botName,
+                    newsletterName: "𝗟𝗘𝗩𝗜𝗔𝗡𝗢-𝗫𝗗 𝗠𝗶𝗻𝗶 𝗩²",
                     serverMessageId: 2,
                 },
             },
