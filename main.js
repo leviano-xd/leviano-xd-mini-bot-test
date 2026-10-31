@@ -583,7 +583,21 @@ async function autoReconnectFromMongoDB() {
     } catch (e) { levianoLog(`autoReconnectFromMongoDB error: ${e.message}`, 'error'); }
 }
 
-setTimeout(() => { autoReconnectFromMongoDB(); }, 3000);
+// Wait until MongoDB is really connected before reconnecting saved numbers.
+// (After a deploy the DB can be slow to connect; without this the bot found
+// "no numbers" and never started by itself.)
+async function startAutoReconnect() {
+    const mongoose = require('mongoose');
+    for (let attempt = 1; attempt <= 5; attempt++) {
+        if (mongoose.connection.readyState === 1) break;
+        levianoLog(`Waiting for database... (${attempt}/5)`, 'warning');
+        if (attempt > 1) await connectdb();
+        else await delay(3000);
+    }
+    await autoReconnectFromMongoDB();
+}
+
+setTimeout(() => { startAutoReconnect(); }, 3000);
 
 
 
