@@ -103,11 +103,11 @@ async(conn, mek, m, { args, isOwner, reply, botNumber, config }) => {
     const value = args[0]?.toLowerCase();
     
     if (value === 'on' || value === 'true') {
-        await updateConfig('WELCOME', 'true', botNumber, config, reply);
+        await updateConfig('WELCOME_ENABLE', 'true', botNumber, config, reply);
     } else if (value === 'off' || value === 'false') {
-        await updateConfig('WELCOME', 'false', botNumber, config, reply);
+        await updateConfig('WELCOME_ENABLE', 'false', botNumber, config, reply);
     } else {
-        reply(`*CURRENT :❯ ${config.WELCOME} 😊*\n\n*WHEN A NEW MEMBER JOINS THE GROUP, A WELCOME MESSAGE WILL BE SENT 😃 TO ENABLE THIS SETTING TYPE ☺️*\n*👑 ❮WELCOME ON❯ 👑*\n*TO DISABLE WELCOME TYPE ☺️*\n*👑 ❮WELCOME OFF❯ 👑*`);
+        reply(`*CURRENT :❯ ${config.WELCOME_ENABLE} 😊*\n\n*WHEN A NEW MEMBER JOINS THE GROUP, A WELCOME MESSAGE WILL BE SENT 😃 TO ENABLE THIS SETTING TYPE ☺️*\n*👑 ❮WELCOME ON❯ 👑*\n*TO DISABLE WELCOME TYPE ☺️*\n*👑 ❮WELCOME OFF❯ 👑*`);
     }
 });
 
@@ -115,18 +115,18 @@ cmd({
     pattern: "goodbye",
     desc: "Enable/Disable goodbye messages",
     category: "settings",
-    react: "🍒"
+    react: "👑"
 },
 async(conn, mek, m, { args, isOwner, reply, botNumber, config }) => {
     if (!isOwner) return reply("*THIS COMMAND IS ONLY FOR ME 😎*");
     const value = args[0]?.toLowerCase();
     
     if (value === 'on' || value === 'true') {
-        await updateConfig('GOODBYE', 'true', botNumber, config, reply);
+        await updateConfig('GOODBYE_ENABLE', 'true', botNumber, config, reply);
     } else if (value === 'off' || value === 'false') {
-        await updateConfig('GOODBYE', 'false', botNumber, config, reply);
+        await updateConfig('GOODBYE_ENABLE', 'false', botNumber, config, reply);
     } else {
-        reply(`*CURRENT :❯ ${config.GOODBYE} 😊*\n\n*WHEN A MEMBER LEAVES THE GROUP, A GOODBYE MESSAGE WILL BE SENT 😃 TO ENABLE THIS SETTING TYPE ☺️*\n*👑 ❮GOODBYE ON❯ 👑*\n*TO DISABLE GOODBYE TYPE ☺️*\n*👑 ❮GOODBYE OFF❯ 👑*`);
+        reply(`*CURRENT :❯ ${config.GOODBYE_ENABLE} 😊*\n\n*WHEN A MEMBER LEAVES THE GROUP, A GOODBYE MESSAGE WILL BE SENT 😃 TO ENABLE THIS SETTING TYPE ☺️*\n*👑 ❮GOODBYE ON❯ 👑*\n*TO DISABLE GOODBYE TYPE ☺️*\n*👑 ❮GOODBYE OFF❯ 👑*`);
     }
 });
 
@@ -219,7 +219,7 @@ cmd({
     pattern: "setprefix",
     desc: "Change bot prefix",
     category: "settings",
-    react: "🍒"
+    react: "👑"
 },
 async(conn, mek, m, { args, isOwner, reply, botNumber, config }) => {
     if (!isOwner) return reply("*THIS COMMAND IS ONLY FOR ME 😎*");
@@ -240,7 +240,7 @@ cmd({
     alias: ["botname", "setname"],
     desc: "Change bot name",
     category: "settings",
-    react: "🍒"
+    react: "👑"
 },
 async(conn, mek, m, { args, isOwner, reply, botNumber, config }) => {
     if (!isOwner) return reply("*THIS COMMAND IS ONLY FOR ME 😎*");
@@ -271,8 +271,8 @@ async(conn, mek, m, { args, isOwner, reply, botNumber, config }) => {
         // Must be a valid http/https link
         if (!/^https?:\/\/\S+$/i.test(newImage)) return reply("❌ Please give a valid image link (must start with http:// or https://)");
 
-        await updateConfig('BOT_IMAGE', newImage, botNumber, config, reply);
+        await updateConfig('IMAGE_PATH', newImage, botNumber, config, reply);
     } else {
-        reply(`*CURRENT BOT IMAGE IS ❮ ${config.BOT_IMAGE} ❯ ☺️*\nSET ANY IMAGE LINK YOU WANT FOR THE BOT LIKE THIS 😊*\n*❮SETBOTIMAGE https://example.com/image.jpg❯*\n*WHATEVER YOU PREFER 😍❣️*`);
+        reply(`*CURRENT BOT IMAGE IS ❮ ${config.IMAGE_PATH} ❯ ☺️*\nSET ANY IMAGE LINK YOU WANT FOR THE BOT LIKE THIS 😊*\n*❮SETBOTIMAGE https://example.com/image.jpg❯*\n*WHATEVER YOU PREFER 😍❣️*`);
     }
 });
