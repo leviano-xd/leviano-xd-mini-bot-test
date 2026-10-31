@@ -8,8 +8,7 @@ const updateConfig = async (key, value, botNumber, config, reply) => {
         config[key] = value;
         
         // 2. Update in Database (Persistent)
-        const newConfig = { ...config }; 
-        newConfig[key] = value;
+        const newConfig = { [key]: value }; // save only the changed key
         
         await updateUserConfig(botNumber, newConfig);
         
