@@ -84,7 +84,7 @@ async(conn, mek, m, { args, isOwner, reply, botNumber, config }) => {
     } else if (value === 'off' || value === 'false') {
         await updateConfig('ANTI_CALL', 'false', botNumber, config, reply);
     } else {
-        reply(`*CURRENT :❯ ${config.ANTI_CALL || config.AUTO_RECORDING} 😊\n\nAny incoming calls will be automatically rejected. 😃 To enable this setting, type: ☺️\n👑 ❮ANTICALL ON❯ 👑\nTo disable it, type: ☺️\n👑 ❮ANTICALL OFF❯ 👑*`);
+        reply(`*CURRENT :❯ ${config.ANTI_CALL} 😊\n\nAny incoming calls will be automatically rejected. 😃 To enable this setting, type: ☺️\n👑 ❮ANTICALL ON❯ 👑\nTo disable it, type: ☺️\n👑 ❮ANTICALL OFF❯ 👑*`);
     }
 });
 
@@ -115,7 +115,7 @@ cmd({
     pattern: "goodbye",
     desc: "Enable/Disable goodbye messages",
     category: "settings",
-    react: "👑"
+    react: "🍒"
 },
 async(conn, mek, m, { args, isOwner, reply, botNumber, config }) => {
     if (!isOwner) return reply("*THIS COMMAND IS ONLY FOR ME 😎*");
@@ -194,7 +194,7 @@ async(conn, mek, m, { args, isOwner, reply, botNumber, config }) => {
 });
 
 // ============================================================
-// 5. SYSTEM (Mode & Prefix)
+// 5. SYSTEM (Mode, Prefix, Bot Name, Bot Image)
 // ============================================================
 
 cmd({
@@ -219,7 +219,7 @@ cmd({
     pattern: "setprefix",
     desc: "Change bot prefix",
     category: "settings",
-    react: "👑"
+    react: "🍒"
 },
 async(conn, mek, m, { args, isOwner, reply, botNumber, config }) => {
     if (!isOwner) return reply("*THIS COMMAND IS ONLY FOR ME 😎*");
@@ -232,5 +232,47 @@ async(conn, mek, m, { args, isOwner, reply, botNumber, config }) => {
         await updateConfig('PREFIX', newPrefix, botNumber, config, reply);
     } else {
         reply(`*CURRENT PREFIX IS ❮ ${config.PREFIX} ❯ ☺️*\nSET ANY SYMBOL YOU WANT TO RUN THE BOT WITH LIKE THIS 😊*\n*❮SETPREFIX . ! + _ -❯*\n*WHATEVER YOU PREFER 😍❣️*`);
+    }
+});
+
+cmd({
+    pattern: "setbotname",
+    alias: ["botname", "setname"],
+    desc: "Change bot name",
+    category: "settings",
+    react: "🍒"
+},
+async(conn, mek, m, { args, isOwner, reply, botNumber, config }) => {
+    if (!isOwner) return reply("*THIS COMMAND IS ONLY FOR ME 😎*");
+    const newName = args.join(' ').trim();
+
+    if (newName) {
+        // Keep the name reasonably short
+        if (newName.length > 30) return reply("❌ Bot name must be 30 characters or less.");
+
+        await updateConfig('BOT_NAME', newName, botNumber, config, reply);
+    } else {
+        reply(`*CURRENT BOT NAME IS ❮ ${config.BOT_NAME} ❯ ☺️*\nSET ANY NAME YOU WANT FOR THE BOT LIKE THIS 😊*\n*❮SETBOTNAME LEVIANO MD❯*\n*WHATEVER YOU PREFER 😍❣️*`);
+    }
+});
+
+cmd({
+    pattern: "setbotimage",
+    alias: ["botimage", "setimage", "setbotimg"],
+    desc: "Change bot image (image URL)",
+    category: "settings",
+    react: "🖼️"
+},
+async(conn, mek, m, { args, isOwner, reply, botNumber, config }) => {
+    if (!isOwner) return reply("*THIS COMMAND IS ONLY FOR ME 😎*");
+    const newImage = args[0];
+
+    if (newImage) {
+        // Must be a valid http/https link
+        if (!/^https?:\/\/\S+$/i.test(newImage)) return reply("❌ Please give a valid image link (must start with http:// or https://)");
+
+        await updateConfig('BOT_IMAGE', newImage, botNumber, config, reply);
+    } else {
+        reply(`*CURRENT BOT IMAGE IS ❮ ${config.BOT_IMAGE} ❯ ☺️*\nSET ANY IMAGE LINK YOU WANT FOR THE BOT LIKE THIS 😊*\n*❮SETBOTIMAGE https://example.com/image.jpg❯*\n*WHATEVER YOU PREFER 😍❣️*`);
     }
 });
