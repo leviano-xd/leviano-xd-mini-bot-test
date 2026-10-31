@@ -8,8 +8,12 @@ cmd({
     desc: "Fetch and display all available bot commands",
     category: "system",
     filename: __filename,
-}, async (conn, mek, m, { reply }) => {
+}, async (conn, mek, m, { reply, config }) => {
     try {
+        // Dynamic values (changed by .setbotname / .setbotimage)
+        const botName = config?.BOT_NAME || "Leviano XD Mini";
+        const botImage = config?.IMAGE_PATH || "https://levianoxd.orionbey76.workers.dev/f/Img-1793369696735.jpg";
+
         let totalCommands = 0;
         let grouped = {};
 
@@ -32,7 +36,7 @@ cmd({
         const date = moment().tz("Africa/Kampala").format("dddd, MMMM Do YYYY");
 
         const caption = `
-╭━━━《 *ʟᴇᴠɪᴀɴᴏ-xᴅ* 》━━━┈⊷
+╭━━━《 *${botName}* 》━━━┈⊷
 ┃ ✦╭─────────────┈⊷
 ┃ ✦│▸ Total Commands : *${totalCommands}*
 ┃ ✦│▸ Time           : ${time}
@@ -44,7 +48,7 @@ ${menuText}
 `.trim();
 
         await conn.sendMessage(m.chat, {
-            image: { url: "https://levianoxd.orionbey76.workers.dev/f/Img-1793369696735.jpg" },
+            image: { url: botImage },
             caption,
             contextInfo: {
                 forwardingScore: 999,
@@ -52,7 +56,7 @@ ${menuText}
                 mentionedJid: [m.sender],
                 forwardedNewsletterMessageInfo: {
                     newsletterJid: "120363407983133153@newsletter",
-                    newsletterName: "𝗟𝗘𝗩𝗜𝗔𝗡𝗢-𝗫𝗗 𝗠𝗶𝗻𝗶 𝗩²",
+                    newsletterName: botName,
                     serverMessageId: 2,
                 },
             },
