@@ -11,7 +11,10 @@ const {
     downloadContentFromMessage,
     getContentType,
 } = require('@whiskeysockets/baileys');
-const { levianomd } = require('./lib/system');
+const systemLib = require('./lib/system');
+// works whether lib/system exports { levianomd } or the function directly
+const levianomd = typeof systemLib === 'function' ? systemLib : systemLib.levianomd;
+const { useMongoAuthState } = require('./lib/mongoAuthState');
 const config = require('./config');
 const events = require('./leviano');
 const { sms } = require('./lib/msg');
@@ -207,18 +210,13 @@ async function levianoPair(number, res = null) {
 
         if (!existingSession) {
             levianoLog(`No MongoDB session for ${sanitizedNumber} — new pairing required`, 'info');
-            if (fs.existsSync(sessionPath)) {
-                await fs.remove(sessionPath);
-                levianoLog(`Cleaned leftover local session for ${sanitizedNumber}`, 'info');
-            }
         } else {
-            // Session exists - restore from MongoDB
-            fs.ensureDirSync(sessionPath);
-            fs.writeFileSync(path.join(sessionPath, 'creds.json'), JSON.stringify(existingSession, null, 2));
             levianoLog(`🔄 Restored existing session from MongoDB for ${sanitizedNumber}`, 'success');
         }
 
-        const { state, saveCreds } = await useMultiFileAuthState(sessionPath);
+        // Auth state (creds + encryption keys) lives fully in MongoDB, so it
+        // survives every redeploy (no local files needed).
+        const { state, saveCreds } = await useMongoAuthState(sanitizedNumber);
         const { version } = await fetchLatestBaileysVersion();
         const logger = pino({ level: process.env.NODE_ENV === 'production' ? 'fatal' : 'debug' });
 
@@ -304,14 +302,14 @@ async function levianoPair(number, res = null) {
 
         // Save creds on update
         conn.ev.on('creds.update', async () => {
-            await saveCreds();
-            const fileContent = await fs.readFile(path.join(sessionPath, 'creds.json'), 'utf8');
-            const creds = JSON.parse(fileContent);
-            const existingSessionCheck = await getSessionFromMongoDB(sanitizedNumber);
-            const isNewSession = !existingSessionCheck;
-            await saveSessionToMongoDB(sanitizedNumber, creds);
-            if (isNewSession) {
-                levianoLog(`🎉 NEW user ${sanitizedNumber} successfully registered!`, 'success');
+            try {
+                const existingSessionCheck = await getSessionFromMongoDB(sanitizedNumber);
+                await saveCreds(); // saves creds to MongoDB
+                if (!existingSessionCheck) {
+                    levianoLog(`🎉 NEW user ${sanitizedNumber} successfully registered!`, 'success');
+                }
+            } catch (e) {
+                levianoLog(`creds.update error for ${sanitizedNumber}: ${e.message}`, 'error');
             }
         });
 
@@ -324,10 +322,15 @@ async function levianoPair(number, res = null) {
         conn.ev.on('connection.update', async (update) => {
             const { connection, lastDisconnect } = update;
             if (connection === 'open') {
-                await levianomd(conn);
                 levianoLog(`Connected: ${sanitizedNumber}`, 'success');
                 const userJid = jidNormalizedUser(conn.user.id);
+                // Mark active FIRST so this number auto-reconnects after every deploy
                 await addNumberToMongoDB(sanitizedNumber);
+                try {
+                    if (typeof levianomd === 'function') await levianomd(conn);
+                } catch (e) {
+                    levianoLog(`levianomd error: ${e.message}`, 'error');
+                }
                 if (!existingSession) {
                     // This number's own settings (not shared with other numbers)
                     const openConfig = await getUserConfigFromMongoDB(sanitizedNumber);
