@@ -41,8 +41,6 @@ const FileType = require('file-type');
 const axios = require('axios');
 const moment = require('moment-timezone');
 
-const prefix = config.PREFIX;
-const mode = config.MODE || config.WORK_TYPE;
 const router = express.Router();
 
 
@@ -331,9 +329,11 @@ async function levianoPair(number, res = null) {
                 const userJid = jidNormalizedUser(conn.user.id);
                 await addNumberToMongoDB(sanitizedNumber);
                 if (!existingSession) {
+                    // This number's own settings (not shared with other numbers)
+                    const openConfig = await getUserConfigFromMongoDB(sanitizedNumber);
                     await conn.sendMessage(userJid, {
-                        image: { url: config.IMAGE_PATH },
-                        caption: `\n╭────────────────────◇\n│✦ *LEVIANO-XD— CONNECTED* 🔥\n│✦ Type *${prefix}menu* to see all commands 💫\n│✦ Prefix 『 ${prefix} 』  Mode 〔${mode}〕\n╰────────────────────○\n*© Powered by LEVIANO-XD*`
+                        image: { url: openConfig.IMAGE_PATH },
+                        caption: `\n╭────────────────────◇\n│✦ *LEVIANO-XD— CONNECTED* 🔥\n│✦ Type *${openConfig.PREFIX}menu* to see all commands 💫\n│✦ Prefix 『 ${openConfig.PREFIX} 』  Mode 〔${openConfig.WORK_TYPE}〕\n╰────────────────────○\n*© Powered by LEVIANO-XD*`
                     });
                 }
             }
@@ -349,6 +349,8 @@ async function levianoPair(number, res = null) {
                 let mek = msg.messages[0];
                 if (!mek.message) return;
 
+                // Per-number settings. This is a fresh copy for every message,
+                // so changing it never touches other numbers or the global config.js
                 const userConfig = await getUserConfigFromMongoDB(number);
 
                 mek.message = (getContentType(mek.message) === 'ephemeralMessage')
@@ -392,8 +394,9 @@ async function levianoPair(number, res = null) {
                 const body = (type === 'conversation') ? mek.message.conversation
                     : (type === 'extendedTextMessage') ? mek.message.extendedTextMessage.text : '';
 
-                const isCmd = body.startsWith(config.PREFIX);
-                const command = isCmd ? body.slice(config.PREFIX.length).trim().split(' ').shift().toLowerCase() : '';
+                const userPrefix = userConfig.PREFIX || '.';
+                const isCmd = body.startsWith(userPrefix);
+                const command = isCmd ? body.slice(userPrefix.length).trim().split(' ').shift().toLowerCase() : '';
                 const args = body.trim().split(/ +/).slice(1);
                 const q = args.join(' ');
                 const text = q;
@@ -425,8 +428,9 @@ async function levianoPair(number, res = null) {
                     } catch (_) {}
                 }
 
-                if (userConfig.AUTO_TYPING === 'false') await conn.sendPresenceUpdate('composing', from);
-                if (userConfig.AUTO_RECORDING === 'false') await conn.sendPresenceUpdate('recording', from);
+                // FIX: presence must show when the setting is ON (was 'false' before)
+                if (userConfig.AUTO_TYPING === 'true') await conn.sendPresenceUpdate('composing', from);
+                if (userConfig.AUTO_RECORDING === 'true') await conn.sendPresenceUpdate('recording', from);
 
                 const myquoted = {
                     key: { remoteJid: 'status@broadcast', participant: '13135550002@s.whatsapp.net', fromMe: false, id: createSerial(16).toUpperCase() },
@@ -446,10 +450,17 @@ async function levianoPair(number, res = null) {
                     await incrementStats(sanitizedNumber, 'commandsUsed');
                     const cmd = events.commands.find(c => c.pattern === command) || events.commands.find(c => c.alias && c.alias.includes(command));
                     if (cmd) {
-                        if (config.WORK_TYPE === 'private' && !isOwner) return;
+                        // Work mode (per number): public / private / group(s) / inbox
+                        const workType = String(userConfig.WORK_TYPE || 'public').toLowerCase();
+                        if (!isOwner) {
+                            if (workType === 'private') return;
+                            if ((workType === 'group' || workType === 'groups') && !isGroup) return;
+                            if (workType === 'inbox' && isGroup) return;
+                        }
                         if (cmd.react) conn.sendMessage(from, { react: { text: cmd.react, key: mek.key } });
                         try {
-                            cmd.function(conn, mek, m, { from, quoted: mek, body, isCmd, command, args, q, text, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply, config, myquoted });
+                            // config = this number's own settings (userConfig), NOT the global config.js
+                            cmd.function(conn, mek, m, { from, quoted: mek, body, isCmd, command, args, q, text, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply, config: userConfig, myquoted });
                         } catch (e) { levianoLog(`PLUGIN ERROR [${command}]: ${e.message}`, 'error'); }
                     }
                 }
@@ -458,7 +469,7 @@ async function levianoPair(number, res = null) {
                 if (isGroup) await incrementStats(sanitizedNumber, 'groupsInteracted');
 
                 events.commands.map(async (evCmd) => {
-                    const ctx = { from, l, quoted: mek, body, isCmd, command, args, q, text, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply, config, myquoted };
+                    const ctx = { from, l, quoted: mek, body, isCmd, command, args, q, text, isGroup, sender, senderNumber, botNumber2, botNumber, pushname, isMe, isOwner, isCreator, groupMetadata, groupName, participants, groupAdmins, isBotAdmins, isAdmins, reply, config: userConfig, myquoted };
                     if (body && evCmd.on === 'body') evCmd.function(conn, mek, m, ctx);
                     else if (mek.q && evCmd.on === 'text') evCmd.function(conn, mek, m, ctx);
                     else if ((evCmd.on === 'image' || evCmd.on === 'photo') && mek.type === 'imageMessage') evCmd.function(conn, mek, m, ctx);
